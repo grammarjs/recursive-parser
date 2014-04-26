@@ -22,7 +22,7 @@ function Parser(grammar) {
  */
 
 Parser.prototype.parse = function(str){
-  var val = this.visitExpression(str, this.grammar.root);
+  var val = this.visitExpression(str, this.grammar.root, this.grammar);
   this.reset();
   return val;
 };
@@ -34,13 +34,13 @@ Parser.prototype.parse = function(str){
  * @param {Expression} exp
  */
 
-Parser.prototype.visitExpression = function(str, exp){
+Parser.prototype.visitExpression = function(str, exp, grammar){
   var rules = exp.rules;
   var rule;
   var val;
 
   for (var i = 0, n = rules.length; i < n; i++) {
-    val = this.visitRule(str, rules[i]);
+    val = this.visitRule(str, rules[i], grammar);
     // blank string '' also counts
     if (null != val) return val;
   }
@@ -50,13 +50,13 @@ Parser.prototype.visitExpression = function(str, exp){
  * Parse rule.
  */
 
-Parser.prototype.visitRule = function(str, rule){
+Parser.prototype.visitRule = function(str, rule, grammar){
   var args = [];
   var val;
   var pos = this.pos;
 
   for (var i = 0, n = rule.tokens.length - 1; i < n; i++) {
-    val = this.visitToken(str, rule.tokens[i]);
+    val = this.visitToken(str, rule.tokens[i], grammar);
     if (null == val) {
       this.pos = pos; // reset
       return;
@@ -71,18 +71,18 @@ Parser.prototype.visitRule = function(str, rule){
  * Parse token.
  */
 
-Parser.prototype.visitToken = function(str, token){
+Parser.prototype.visitToken = function(str, token, grammar){
   if (token.isExpression) {
     var exp = token.grammar
-      ? this.grammar.expressions[token.grammar].expressions[token.expression]
-      : this.grammar.expressions[token.expression];
+      ? grammar.expressions[token.grammar].expressions[token.expression]
+      : grammar.expressions[token.expression];
 
     if (token.many) {
       var pos = this.pos;
       var res = [];
       var val;
 
-      while (val = this.visitExpression(str, exp)) {
+      while (val = this.visitExpression(str, exp, grammar)) {
         res.push(val);
       }
 
@@ -92,9 +92,9 @@ Parser.prototype.visitToken = function(str, token){
       }
       return res;
     } else if (token.optional) {
-      return this.visitExpression(str, exp) || '';
+      return this.visitExpression(str, exp, grammar) || '';
     } else {
-      return this.visitExpression(str, exp);
+      return this.visitExpression(str, exp, grammar);
     }
   } else {
     return token.parse(str, this);
