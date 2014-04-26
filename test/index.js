@@ -96,8 +96,46 @@ describe('expression', function(){
     assert(!parser.parse('words'));
   });
 
+  it('should handle /\\d+/ (regexp one or more)', function(){
+    var grammar = new Grammar('math');
+    var expression = grammar.expression;
+
+    expression('math').match(/\d+/, '+', /\d/, addition);
+
+    var parser = new Parser(grammar);
+    var val = parser.parse('10+2');
+    assert(12 === val);
+  });
+
+  it('should handle /\\d*/ (regexp zero or more)', function(){
+    var grammar = new Grammar('numbers');
+    var expression = grammar.expression;
+
+    expression('numbers').match(/\d*/, parseInt);
+
+    var parser = new Parser(grammar);
+    assert(123 === parser.parse('123'));
+    assert(7 === parser.parse('7'));
+    assert(isNaN(parser.parse('')));
+  });
+
+  it('should handle /words?/ (regexp optional)', function(){
+    var grammar = new Grammar('plural');
+    var expression = grammar.expression;
+
+    expression('plural').match('word', /s?/, '!', function(a, b, c){
+      return a + b + c;
+    });
+
+    var parser = new Parser(grammar);
+    assert('words!' == parser.parse('words!'));
+    assert('word!' == parser.parse('word!'));
+    assert(!parser.parse('wor'));
+    assert(!parser.parse('word'));
+    assert(!parser.parse('words'));
+  });
+
   // it('should handle :grammar:expression');
-  // it('should handle /\\d+/');
 });
 
 function addition($1, $2, $3) {

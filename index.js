@@ -8,7 +8,8 @@ module.exports = Parser;
 /**
  * Parsing context.
  *
- * @api private
+ * @param {Grammar} grammar
+ * @api public
  */
 
 function Parser(grammar) {
@@ -106,4 +107,5 @@ Parser.prototype.visitToken = function(str, token){
 
 Parser.prototype.reset = function(){
   this.pos = 0;
+  return this;
 };
