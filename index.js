@@ -19,6 +19,9 @@ function Parser(grammar) {
 
 /**
  * Parse the string.
+ *
+ * @param {String} str Input string to parse.
+ * @api public
  */
 
 Parser.prototype.parse = function(str){
@@ -32,6 +35,9 @@ Parser.prototype.parse = function(str){
  *
  * @param {String} str
  * @param {Expression} exp
+ * @param {Grammar} grammar
+ *
+ * @api private
  */
 
 Parser.prototype.visitExpression = function(str, exp, grammar){
@@ -48,6 +54,12 @@ Parser.prototype.visitExpression = function(str, exp, grammar){
 
 /**
  * Parse rule.
+ *
+ * @param {String} str
+ * @param {Rule} rule
+ * @param {Grammar} grammar
+ *
+ * @api private
  */
 
 Parser.prototype.visitRule = function(str, rule, grammar){
@@ -69,6 +81,12 @@ Parser.prototype.visitRule = function(str, rule, grammar){
 
 /**
  * Parse token.
+ *
+ * @param {String} str
+ * @param {Token} token
+ * @param {Grammar} grammar
+ *
+ * @api private
  */
 
 Parser.prototype.visitToken = function(str, token, grammar){
