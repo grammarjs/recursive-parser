@@ -73,7 +73,9 @@ Parser.prototype.visitRule = function(str, rule){
 
 Parser.prototype.visitToken = function(str, token){
   if (token.isExpression) {
-    var exp = this.grammar.expressions[token.name];
+    var exp = token.grammar
+      ? this.grammar.expressions[token.grammar].expressions[token.expression]
+      : this.grammar.expressions[token.expression];
 
     if (token.many) {
       var pos = this.pos;

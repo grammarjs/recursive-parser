@@ -135,7 +135,22 @@ describe('expression', function(){
     assert(!parser.parse('words'));
   });
 
-  // it('should handle :grammar:expression');
+  it('should handle :grammar:expression', function(){
+    var nested = new Grammar('nested');
+    nested.expression('nested')
+      .match(':operator');
+    nested.expression('operator')
+      .match('+')
+      .match('-');
+
+    var grammar = new Grammar('math');
+    grammar.use(nested);
+    grammar.expression('math')
+      .match(/\d+/, ':nested:operator', /\d+/, addition);
+
+    var parser = new Parser(grammar);
+    assert(3 == parser.parse('1+2'));
+  });
 });
 
 function addition($1, $2, $3) {
