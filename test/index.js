@@ -83,30 +83,21 @@ describe('expression', function(){
     var grammar = new Grammar('plural');
     var expression = grammar.expression;
 
-    expression('plural').match('word', ':pluralized?', function(a, b){
-      return a + b;
+    expression('plural').match('word', ':pluralized?', '!', function(a, b, c){
+      return a + b + c;
     });
     expression('pluralized').match('s', value);
 
     var parser = new Parser(grammar);
-    assert('words' == parser.parse('words'));
-    assert('word' == parser.parse('word'));
+    assert('words!' == parser.parse('words!'));
+    assert('word!' == parser.parse('word!'));
     assert(!parser.parse('wor'));
+    assert(!parser.parse('word'));
+    assert(!parser.parse('words'));
   });
 
   // it('should handle :grammar:expression');
   // it('should handle /\\d+/');
-
-  // it('should define nested expressions', function(){
-  //   var grammar = new Grammar('digits');
-  //   var expression = grammar.expression;
-
-  //   expression('digits').match(':digit+');
-  //   expression('digit').match(/\d/);
-
-  //   var val = grammar.parse('123');
-  //   console.log(val);
-  // });
 });
 
 function addition($1, $2, $3) {
