@@ -41,12 +41,10 @@ Parser.prototype.parse = function(str){
  */
 
 Parser.prototype.visitExpression = function(str, exp, grammar){
-  var rules = exp.rules;
-  var rule;
   var val;
 
-  for (var i = 0, n = rules.length; i < n; i++) {
-    val = this.visitRule(str, rules[i], grammar);
+  for (var i = 0, n = exp.rules.length; i < n; i++) {
+    val = this.visitRule(str, exp.rules[i], grammar);
     // blank string '' also counts
     if (null != val) return val;
   }
@@ -63,9 +61,9 @@ Parser.prototype.visitExpression = function(str, exp, grammar){
  */
 
 Parser.prototype.visitRule = function(str, rule, grammar){
+  var pos = this.pos;
   var args = [];
   var val;
-  var pos = this.pos;
 
   for (var i = 0, n = rule.symbols.length - 1; i < n; i++) {
     val = this.visitSymbol(str, rule.symbols[i], grammar);
