@@ -1,6 +1,6 @@
 {
-  "name": "parser",
-  "repo": "parsejs/parser",
+  "name": "recursive-parser",
+  "repo": "parsejs/recursive-parser",
   "description": "Parser component",
   "version": "0.0.1",
   "keywords": ["peg", "parsing"],

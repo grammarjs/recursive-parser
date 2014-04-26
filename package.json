@@ -1,6 +1,6 @@
 {
-  "name": "parsejs-parser",
-  "version": "0.0.1",
+  "name": "parsejs-recursive-parser",
+  "version": "0.1.0",
   "main": "./index.js",
   "dependencies": {
     "parsejs-grammar": "*"
