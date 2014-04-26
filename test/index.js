@@ -79,7 +79,21 @@ describe('expression', function(){
     assert(isNaN(parser.parse('')));
   });
 
-  // it('should handle :expression?');
+  it('should handle :expression? (optional)', function(){
+    var grammar = new Grammar('plural');
+    var expression = grammar.expression;
+
+    expression('plural').match('word', ':pluralized?', function(a, b){
+      return a + b;
+    });
+    expression('pluralized').match('s', value);
+
+    var parser = new Parser(grammar);
+    assert('words' == parser.parse('words'));
+    assert('word' == parser.parse('word'));
+    assert(!parser.parse('wor'));
+  });
+
   // it('should handle :grammar:expression');
   // it('should handle /\\d+/');
 

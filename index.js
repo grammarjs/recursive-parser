@@ -56,7 +56,7 @@ Parser.prototype.visitRule = function(str, rule){
 
   for (var i = 0, n = rule.tokens.length - 1; i < n; i++) {
     val = this.visitToken(str, rule.tokens[i]);
-    if (!val) {
+    if (null == val) {
       this.pos = pos; // reset
       return;
     }
@@ -72,11 +72,12 @@ Parser.prototype.visitRule = function(str, rule){
 
 Parser.prototype.visitToken = function(str, token){
   if (token.isExpression) {
+    var exp = this.grammar.expressions[token.name];
+
     if (token.many) {
-      var val;
-      var res = [];
-      var exp = this.grammar.expressions[token.name];
       var pos = this.pos;
+      var res = [];
+      var val;
 
       while (val = this.visitExpression(str, exp)) {
         res.push(val);
@@ -88,9 +89,9 @@ Parser.prototype.visitToken = function(str, token){
       }
       return res;
     } else if (token.optional) {
-
+      return this.visitExpression(str, exp) || '';
     } else {
-      return this.visitExpression(str, this.grammar.expressions[token.name]);
+      return this.visitExpression(str, exp);
     }
   } else {
     return token.parse(str, this);
