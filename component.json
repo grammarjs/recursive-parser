@@ -2,7 +2,7 @@
   "name": "recursive-parser",
   "repo": "parsejs/recursive-parser",
   "description": "Parser component",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "keywords": ["peg", "parsing"],
   "dependencies": {
     "parsejs/grammar": "*"

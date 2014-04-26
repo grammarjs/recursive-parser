@@ -67,8 +67,8 @@ Parser.prototype.visitRule = function(str, rule, grammar){
   var val;
   var pos = this.pos;
 
-  for (var i = 0, n = rule.tokens.length - 1; i < n; i++) {
-    val = this.visitToken(str, rule.tokens[i], grammar);
+  for (var i = 0, n = rule.symbols.length - 1; i < n; i++) {
+    val = this.visitSymbol(str, rule.symbols[i], grammar);
     if (null == val) {
       this.pos = pos; // reset
       return;
@@ -80,22 +80,22 @@ Parser.prototype.visitRule = function(str, rule, grammar){
 };
 
 /**
- * Parse token.
+ * Parse symbol.
  *
  * @param {String} str
- * @param {Token} token
+ * @param {Symbol} symbol
  * @param {Grammar} grammar
  *
  * @api private
  */
 
-Parser.prototype.visitToken = function(str, token, grammar){
-  if (token.isExpression) {
-    var exp = token.grammar
-      ? grammar.expressions[token.grammar].expressions[token.expression]
-      : grammar.expressions[token.expression];
+Parser.prototype.visitSymbol = function(str, symbol, grammar){
+  if (symbol.isExpression) {
+    var exp = symbol.grammar
+      ? grammar.expressions[symbol.grammar].expressions[symbol.expression]
+      : grammar.expressions[symbol.expression];
 
-    if (token.many) {
+    if (symbol.many) {
       var pos = this.pos;
       var res = [];
       var val;
@@ -104,18 +104,18 @@ Parser.prototype.visitToken = function(str, token, grammar){
         res.push(val);
       }
 
-      if (token.oneOrMore && !res.length) {
+      if (symbol.oneOrMore && !res.length) {
         this.pos = pos;
         return;
       }
       return res;
-    } else if (token.optional) {
+    } else if (symbol.optional) {
       return this.visitExpression(str, exp, grammar) || '';
     } else {
       return this.visitExpression(str, exp, grammar);
     }
   } else {
-    return token.parse(str, this);
+    return symbol.parse(str, this);
   }
 };
 
