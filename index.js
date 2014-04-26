@@ -21,7 +21,9 @@ function Parser(grammar) {
  */
 
 Parser.prototype.parse = function(str){
-  return this.visitExpression(str, this.grammar.root);
+  var val = this.visitExpression(str, this.grammar.root);
+  this.reset();
+  return val;
 };
 
 /**
@@ -48,13 +50,16 @@ Parser.prototype.visitExpression = function(str, exp){
  */
 
 Parser.prototype.visitRule = function(str, rule){
-  var tokens = rule.tokens;
   var args = [];
   var val;
+  var pos = this.pos;
 
-  for (var i = 0, n = tokens.length - 1; i < n; i++) {
-    val = this.visitToken(str, tokens[i]);
-    if (!val) return;
+  for (var i = 0, n = rule.tokens.length - 1; i < n; i++) {
+    val = this.visitToken(str, rule.tokens[i]);
+    if (!val) {
+      this.pos = pos; // reset
+      return;
+    }
     args.push(val);
   }
 
@@ -67,8 +72,37 @@ Parser.prototype.visitRule = function(str, rule){
 
 Parser.prototype.visitToken = function(str, token){
   if (token.isExpression) {
+    if (token.many) {
+      var val;
+      var res = [];
+      var exp = this.grammar.expressions[token.name];
+      var pos = this.pos;
 
+      while (val = this.visitExpression(str, exp)) {
+        res.push(val);
+      }
+
+      if (token.oneOrMore && !res.length) {
+        this.pos = pos;
+        return;
+      }
+      return res;
+    } else if (token.optional) {
+
+    } else {
+      return this.visitExpression(str, this.grammar.expressions[token.name]);
+    }
   } else {
     return token.parse(str, this);
   }
+};
+
+/**
+ * Reset parser.
+ *
+ * @api public
+ */
+
+Parser.prototype.reset = function(){
+  this.pos = 0;
 };
