@@ -1,0 +1,16 @@
+{
+  "name": "parser",
+  "repo": "parsejs/parser",
+  "description": "Parser component",
+  "version": "0.0.1",
+  "keywords": ["peg", "parsing"],
+  "dependencies": {
+    "parsejs/grammar": "*"
+  },
+  "development": {
+    "visionmedia/mocha": "*",
+    "component/assert": "*"
+  },
+  "scripts": ["index.js"],
+  "license": "MIT"
+}
