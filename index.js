@@ -89,9 +89,11 @@ Parser.prototype.visitRule = function(str, rule, grammar){
 
 Parser.prototype.visitSymbol = function(str, symbol, grammar){
   if (symbol.isExpression) {
-    var exp = symbol.grammar
-      ? grammar.expressions[symbol.grammar].expressions[symbol.expression]
-      : grammar.expressions[symbol.expression];
+    if (symbol.grammar) {
+      grammar = grammar.expressions[symbol.grammar];
+    }
+
+    var exp = grammar.expressions[symbol.expression];
 
     if (symbol.many) {
       var pos = this.pos;
