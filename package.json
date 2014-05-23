@@ -1,8 +1,8 @@
 {
-  "name": "parsejs-recursive-parser",
+  "name": "grammarjs-recursive-parser",
   "version": "0.1.1",
   "main": "./index.js",
   "dependencies": {
-    "parsejs-grammar": "*"
+    "grammarjs-grammar": "*"
   }
 }

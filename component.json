@@ -1,11 +1,11 @@
 {
   "name": "recursive-parser",
-  "repo": "parsejs/recursive-parser",
+  "repo": "grammarjs/recursive-parser",
   "description": "Parser component",
   "version": "0.1.1",
   "keywords": ["peg", "parsing"],
   "dependencies": {
-    "parsejs/grammar": "*"
+    "grammarjs/grammar": "*"
   },
   "development": {
     "visionmedia/mocha": "*",

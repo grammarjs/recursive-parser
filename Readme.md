@@ -7,13 +7,13 @@ Recursive descent parser for PEG.
 node.js:
 
 ```
-$ npm install parsejs-parser
+$ npm install grammarjs-parser
 ```
 
 browser:
 
 ```
-$ component install parsejs/parser
+$ component install grammarjs/parser
 ```
 
 ## Licence
