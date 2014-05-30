@@ -1,11 +1,11 @@
 
 if ('undefined' === typeof window) {
   var Parser = require('..');
-  var Grammar = require('parsejs-grammar');
+  var Grammar = require('grammarjs-grammar');
   var assert = require('assert');
 } else {
-  var Parser = require('parsejs-parser');
-  var Grammar = require('parsejs-grammar');
+  var Parser = require('grammarjs-parser');
+  var Grammar = require('grammarjs-grammar');
   var assert = require('component-assert');
 }
 
