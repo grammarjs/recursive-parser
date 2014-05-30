@@ -151,6 +151,24 @@ describe('expression', function(){
     var parser = new Parser(grammar);
     assert(3 == parser.parse('1+2'));
   });
+
+  it('should store a reference to expression, rule, and symbol', function(){
+    var grammar = new Grammar('numbers');
+    var expression = grammar.expression;
+
+    var ctx = {};
+    expression('numbers').match(/\d*/, function(){
+      ctx.expression = this.expression;
+      ctx.rule = this.rule;
+      ctx.symbol = this.symbol;
+    });
+
+    var parser = new Parser(grammar);
+    parser.parse('123');
+    assert('numbers' == ctx.expression.name);
+    assert(ctx.rule);
+    assert(ctx.symbol.isRegExp);
+  });
 });
 
 function addition($1, $2, $3) {

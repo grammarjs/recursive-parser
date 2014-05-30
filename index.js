@@ -42,6 +42,7 @@ Parser.prototype.parse = function(str){
 
 Parser.prototype.visitExpression = function(str, exp, grammar){
   var val;
+  this.expression = exp;
 
   for (var i = 0, n = exp.rules.length; i < n; i++) {
     val = this.visitRule(str, exp.rules[i], grammar);
@@ -64,6 +65,7 @@ Parser.prototype.visitRule = function(str, rule, grammar){
   var pos = this.pos;
   var args = [];
   var val;
+  this.rule = rule;
 
   for (var i = 0, n = rule.symbols.length - 1; i < n; i++) {
     val = this.visitSymbol(str, rule.symbols[i], grammar);
@@ -88,6 +90,7 @@ Parser.prototype.visitRule = function(str, rule, grammar){
  */
 
 Parser.prototype.visitSymbol = function(str, symbol, grammar){
+  this.symbol = symbol;
   if (symbol.isExpression) {
     if (symbol.grammar) {
       grammar = grammar.expressions[symbol.grammar];
@@ -127,5 +130,8 @@ Parser.prototype.visitSymbol = function(str, symbol, grammar){
 
 Parser.prototype.reset = function(){
   this.pos = 0;
+  delete this.expression;
+  delete this.rule;
+  delete this.symbol;
   return this;
 };
