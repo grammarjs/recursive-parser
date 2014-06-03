@@ -91,6 +91,8 @@ Parser.prototype.visitRule = function(str, rule, grammar){
 
 Parser.prototype.visitSymbol = function(str, symbol, grammar){
   this.symbol = symbol;
+  var prev = this.expression;
+
   if (symbol.isExpression) {
     if (symbol.grammar) {
       grammar = grammar.expressions[symbol.grammar];
@@ -107,15 +109,21 @@ Parser.prototype.visitSymbol = function(str, symbol, grammar){
         res.push(val);
       }
 
+      this.expression = prev;
+
       if (symbol.oneOrMore && !res.length) {
         this.pos = pos;
         return;
       }
       return res;
     } else if (symbol.optional) {
-      return this.visitExpression(str, exp, grammar) || '';
+      var res = this.visitExpression(str, exp, grammar) || '';
+      this.expression = prev;
+      return res;
     } else {
-      return this.visitExpression(str, exp, grammar);
+      var res = this.visitExpression(str, exp, grammar);
+      this.expression = prev;
+      return res;
     }
   } else {
     return symbol.parse(str, this);
