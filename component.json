@@ -2,7 +2,7 @@
   "name": "recursive-parser",
   "repo": "grammarjs/recursive-parser",
   "description": "Parser component",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "keywords": ["peg", "parsing"],
   "dependencies": {
     "grammarjs/grammar": "0.1.*"
