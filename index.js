@@ -95,10 +95,10 @@ Parser.prototype.visitSymbol = function(str, symbol, grammar){
 
   if (symbol.isExpression) {
     if (symbol.grammar) {
-      grammar = grammar.expressions[symbol.grammar];
+      grammar = grammar.rules[symbol.grammar];
     }
 
-    var exp = grammar.expressions[symbol.expression];
+    var exp = grammar.rules[symbol.expression];
 
     if (symbol.many) {
       var pos = this.pos;

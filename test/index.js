@@ -9,22 +9,22 @@ if ('undefined' === typeof window) {
   var assert = require('component-assert');
 }
 
-describe('expression', function(){
-  it('should define string expressions', function(){
+describe('rule', function(){
+  it('should define string rules', function(){
     var grammar = new Grammar('math');
-    grammar.expression('math').match('1', parseInt);
+    grammar.rule('math').match('1', parseInt);
     var parser = new Parser(grammar);
     var val = parser.parse('1');
     assert(1 === val);
   });
 
-  it('should define sub-expressions', function(){
+  it('should define sub-rules', function(){
     var grammar = new Grammar('math');
-    var expression = grammar.expression;
+    var rule = grammar.rule;
 
-    expression('math').match(':numb', ':plus', ':numb', addition);
-    expression('plus').match('+', value);
-    expression('numb').match(/\d/, value);
+    rule('math').match(':numb', ':plus', ':numb', addition);
+    rule('plus').match('+', value);
+    rule('numb').match(/\d/, value);
 
     var parser = new Parser(grammar);
     var val = parser.parse('1+2');
@@ -33,19 +33,19 @@ describe('expression', function(){
 
   it('should skip non-matching matchers', function(){
     var grammar = new Grammar('math');
-    var expression = grammar.expression;
+    var rule = grammar.rule;
 
-    expression('math')
+    rule('math')
       .match(':numb', ':plus', ':numb', addition)
       .match(':numb', ':minus', ':numb', subtraction);
     
-    expression('plus')
+    rule('plus')
       .match('+', value);
 
-    expression('minus')
+    rule('minus')
       .match('-', value);
 
-    expression('numb')
+    rule('numb')
       .match(/\d/, value);
 
     var parser = new Parser(grammar);
@@ -53,25 +53,25 @@ describe('expression', function(){
     assert(-1 === val);
   });
 
-  it('should handle :expression+', function(){
+  it('should handle :rule+', function(){
     var grammar = new Grammar('math');
-    var expression = grammar.expression;
+    var rule = grammar.rule;
 
-    expression('math').match(':numb+', ':plus', ':numb+', addition2);
-    expression('plus').match('+', value);
-    expression('numb').match(/\d/, value);
+    rule('math').match(':numb+', ':plus', ':numb+', addition2);
+    rule('plus').match('+', value);
+    rule('numb').match(/\d/, value);
 
     var parser = new Parser(grammar);
     var val = parser.parse('10+20');
     assert(30 === val);
   });
 
-  it('should handle :expression* (zero or more)', function(){
+  it('should handle :rule* (zero or more)', function(){
     var grammar = new Grammar('numbers');
-    var expression = grammar.expression;
+    var rule = grammar.rule;
 
-    expression('numbers').match(':numb*', ints);
-    expression('numb').match(/\d/, value);
+    rule('numbers').match(':numb*', ints);
+    rule('numb').match(/\d/, value);
 
     var parser = new Parser(grammar);
     assert(123 === parser.parse('123'));
@@ -79,14 +79,14 @@ describe('expression', function(){
     assert(isNaN(parser.parse('')));
   });
 
-  it('should handle :expression? (optional)', function(){
+  it('should handle :rule? (optional)', function(){
     var grammar = new Grammar('plural');
-    var expression = grammar.expression;
+    var rule = grammar.rule;
 
-    expression('plural').match('word', ':pluralized?', '!', function(a, b, c){
+    rule('plural').match('word', ':pluralized?', '!', function(a, b, c){
       return a + b + c;
     });
-    expression('pluralized').match('s', value);
+    rule('pluralized').match('s', value);
 
     var parser = new Parser(grammar);
     assert('words!' == parser.parse('words!'));
@@ -98,9 +98,9 @@ describe('expression', function(){
 
   it('should handle /\\d+/ (regexp one or more)', function(){
     var grammar = new Grammar('math');
-    var expression = grammar.expression;
+    var rule = grammar.rule;
 
-    expression('math').match(/\d+/, '+', /\d/, addition);
+    rule('math').match(/\d+/, '+', /\d/, addition);
 
     var parser = new Parser(grammar);
     var val = parser.parse('10+2');
@@ -109,9 +109,9 @@ describe('expression', function(){
 
   it('should handle /\\d*/ (regexp zero or more)', function(){
     var grammar = new Grammar('numbers');
-    var expression = grammar.expression;
+    var rule = grammar.rule;
 
-    expression('numbers').match(/\d*/, parseInt);
+    rule('numbers').match(/\d*/, parseInt);
 
     var parser = new Parser(grammar);
     assert(123 === parser.parse('123'));
@@ -121,9 +121,9 @@ describe('expression', function(){
 
   it('should handle /words?/ (regexp optional)', function(){
     var grammar = new Grammar('plural');
-    var expression = grammar.expression;
+    var rule = grammar.rule;
 
-    expression('plural').match('word', /s?/, '!', function(a, b, c){
+    rule('plural').match('word', /s?/, '!', function(a, b, c){
       return a + b + c;
     });
 
@@ -135,37 +135,37 @@ describe('expression', function(){
     assert(!parser.parse('words'));
   });
 
-  it('should handle :grammar:expression', function(){
+  it('should handle :grammar:rule', function(){
     var nested = new Grammar('nested');
-    nested.expression('nested')
+    nested.rule('nested')
       .match(':operator');
-    nested.expression('operator')
+    nested.rule('operator')
       .match('+')
       .match('-');
 
     var grammar = new Grammar('math');
     grammar.use(nested);
-    grammar.expression('math')
+    grammar.rule('math')
       .match(/\d+/, ':nested:operator', /\d+/, addition);
 
     var parser = new Parser(grammar);
     assert(3 == parser.parse('1+2'));
   });
 
-  it('should store a reference to expression, rule, and symbol', function(){
+  it('should store a reference to rule, rule, and symbol', function(){
     var grammar = new Grammar('numbers');
-    var expression = grammar.expression;
+    var rule = grammar.rule;
 
     var ctx = {};
-    expression('numbers').match(/\d*/, function(){
-      ctx.expression = this.expression;
+    rule('numbers').match(/\d*/, function(){
+      ctx.rule = this.rule;
       ctx.rule = this.rule;
       ctx.symbol = this.symbol;
     });
 
     var parser = new Parser(grammar);
     parser.parse('123');
-    assert('numbers' == ctx.expression.name);
+    assert('numbers' == ctx.rule.name);
     assert(ctx.rule);
     assert(ctx.symbol.isRegExp);
   });
