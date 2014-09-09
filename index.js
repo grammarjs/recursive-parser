@@ -94,10 +94,6 @@ Parser.prototype.visitSymbol = function(str, symbol, grammar){
   var prev = this.expression;
 
   if (symbol.isExpression) {
-    if (symbol.grammar) {
-      grammar = grammar.rules[symbol.grammar];
-    }
-
     var exp = grammar.rules[symbol.expression];
 
     if (symbol.many) {
@@ -121,6 +117,7 @@ Parser.prototype.visitSymbol = function(str, symbol, grammar){
       this.expression = prev;
       return res;
     } else {
+      var pos = grammar.pos;
       var res = this.visitExpression(str, exp, grammar);
       this.expression = prev;
       return res;
