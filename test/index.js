@@ -152,6 +152,41 @@ describe('parser', function(){
     assert(ctx.rule);
     assert(ctx.symbol.isRegExp);
   });
+
+  it('should not consume token if given !', function(){
+    var grammar = new Grammar('relation');
+    var rule = grammar.rule;
+
+    rule('relation')
+      .match(/\d+/, ':gt', /\d+/, function($1, $2, $3){
+        return parseInt($1) > parseInt($3);
+      });
+
+    rule('gt').match(':character.gt', '!:character.gt', value);
+    rule('character.gt').match('>', value);
+
+    var parser = new Parser(grammar);
+    assert(parser.parse('17>15'));
+  });
+
+  it('should not consume token if given &', function(){
+    var grammar = new Grammar('relation');
+    var rule = grammar.rule;
+
+    rule('relation')
+      .match(/\d+/, ':lt', /\d+/, function($1, $2, $3){
+        return parseInt($1) < parseInt($3);
+      });
+
+    rule('lt').match(':character.lt', '&:number', function(op){
+      return op;
+    });
+    rule('character.lt').match('<', value);
+    rule('number').match(/\d/, value);
+
+    var parser = new Parser(grammar);
+    assert(parser.parse('7<15'));
+  });
 });
 
 function addition($1, $2, $3) {

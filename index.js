@@ -69,7 +69,12 @@ Parser.prototype.visitRule = function(str, rule, grammar){
 
   for (var i = 0, n = rule.symbols.length - 1; i < n; i++) {
     val = this.visitSymbol(str, rule.symbols[i], grammar);
-    if (null == val) {
+    if (null == val && rule.symbols[i].matchAndIgnore) {
+      args.push(val);
+      continue;
+    }
+    // if we didnt get a value, and we don't have a flag to skip if not match
+    if (null == val && !rule.symbols[i].notMatchAndIgnore) {
       this.pos = pos; // reset
       return;
     }
@@ -94,10 +99,6 @@ Parser.prototype.visitSymbol = function(str, symbol, grammar){
   var prev = this.expression;
 
   if (symbol.isExpression) {
-    if (symbol.grammar) {
-      grammar = grammar.rules[symbol.grammar];
-    }
-
     var exp = grammar.rules[symbol.expression];
 
     if (symbol.many) {
@@ -121,7 +122,12 @@ Parser.prototype.visitSymbol = function(str, symbol, grammar){
       this.expression = prev;
       return res;
     } else {
+      var pos = this.pos;
       var res = this.visitExpression(str, exp, grammar);
+      if (res && symbol.matchAndIgnore) {
+        this.pos = pos;
+        res = null;
+      }
       this.expression = prev;
       return res;
     }
