@@ -3,12 +3,12 @@ var Parser = require('./');
 var Grammar = require('grammarjs-grammar');
 
 var grammar = new Grammar('math');
-var expression = grammar.expression;
+var rule = grammar.rule;
 
-expression('math')
+rule('math')
   .match(':addition', value);
 
-expression('addition')
+rule('addition')
   .match(/\d+/, '+', /\d+/, function(left, operator, right){
     return parseInt(left) + parseInt(right);
   });

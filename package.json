@@ -1,8 +1,11 @@
 {
   "name": "grammarjs-recursive-parser",
-  "version": "0.1.4",
+  "version": "0.3.0",
   "main": "./index.js",
   "dependencies": {
-    "grammarjs-grammar": "0.1.*"
+    "grammarjs-grammar": "^0.3.x"
+  },
+  "devDependencies": {
+    "mocha": "^1.21.4"
   }
 }
