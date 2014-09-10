@@ -1,5 +1,11 @@
 
 /**
+ * Module dependencies.
+ */
+
+var fmt = require('util').format;
+
+/**
  * Expose `Parser`.
  */
 
@@ -45,7 +51,7 @@ Parser.prototype.visitExpression = function(str, exp, grammar){
   this.expression = exp;
 
   for (var i = 0, n = exp.rules.length; i < n; i++) {
-    val = this.visitRule(str, exp.rules[i], grammar);
+    val = this.visitRule(str, exp.rules[i], grammar, exp);
     // blank string '' also counts
     if (null != val) return val;
   }
@@ -61,14 +67,14 @@ Parser.prototype.visitExpression = function(str, exp, grammar){
  * @api private
  */
 
-Parser.prototype.visitRule = function(str, rule, grammar){
+Parser.prototype.visitRule = function(str, rule, grammar, exp){
   var pos = this.pos;
   var args = [];
   var val;
   this.rule = rule;
 
   for (var i = 0, n = rule.symbols.length - 1; i < n; i++) {
-    val = this.visitSymbol(str, rule.symbols[i], grammar);
+    val = this.visitSymbol(str, rule.symbols[i], grammar, exp);
     if (null == val && rule.symbols[i].matchAndIgnore) {
       args.push(val);
       continue;
@@ -94,12 +100,13 @@ Parser.prototype.visitRule = function(str, rule, grammar){
  * @api private
  */
 
-Parser.prototype.visitSymbol = function(str, symbol, grammar){
+Parser.prototype.visitSymbol = function(str, symbol, grammar, parentExp){
   this.symbol = symbol;
   var prev = this.expression;
 
   if (symbol.isExpression) {
     var exp = grammar.rules[symbol.expression];
+    if (!exp) throw error("Expression '%s' is undefined (referenced in '%s')", symbol.expression, parentExp.name);
 
     if (symbol.many) {
       var pos = this.pos;
@@ -149,3 +156,13 @@ Parser.prototype.reset = function(){
   delete this.symbol;
   return this;
 };
+
+/**
+ * Create a formatted error.
+ *
+ * @return {Erro}
+ */
+
+function error(msg) {
+  return new Error(fmt.apply(fmt, arguments));
+}

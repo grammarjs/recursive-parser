@@ -141,9 +141,10 @@ describe('parser', function(){
 
     var ctx = {};
     rule('numbers').match(/\d*/, function(){
-      ctx.expression = this.expression;
-      ctx.rule = this.rule;
-      ctx.symbol = this.symbol;
+      var parser = this.parser;
+      ctx.expression = parser.expression;
+      ctx.rule = parser.rule;
+      ctx.symbol = parser.symbol;
     });
 
     var parser = new Parser(grammar);
@@ -186,6 +187,31 @@ describe('parser', function(){
 
     var parser = new Parser(grammar);
     assert(parser.parse('7<15'));
+  });
+
+  it('should return joined strings by default if there are no expressions', function(){
+    var grammar = new Grammar('relation');
+    var rule = grammar.rule;
+
+    rule('relation').match(/\d+/, '<', /\d+/);
+
+    var parser = new Parser(grammar);
+    assert.equal(parser.parse('7<15'), '7<15');
+  });
+
+  it('should return array of expression', function(){
+    var grammar = new Grammar('relation.array');
+    var rule = grammar.rule;
+
+    rule('relation.array').match(':digit', '<', ':digit');
+    rule('digit').match(/\d+/);
+
+    var parser = new Parser(grammar);
+    assert.deepEqual(parser.parse('7<15'), [
+      { type: 'digit', content: '7' },
+      { type: 'string', content: '<' },
+      { type: 'digit', content: '15' }
+    ]);
   });
 });
 
