@@ -1,4 +1,10 @@
 
+0.5.0 / 2014-09-10
+==================
+
+ * remove component.json and npmignore for now
+ * all tests passing with new token api
+
 0.4.0 / 2014-09-10
 ==================
 
