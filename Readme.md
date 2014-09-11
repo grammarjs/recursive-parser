@@ -1,7 +1,8 @@
 
 # Parser
 
-[![Build Status](https://travis-ci.org/grammarjs/recursive-parser.svg)](https://travis-ci.org/grammarjs/recursive-parser)
+![experimental](http://img.shields.io/badge/status-experimental-orange.svg?style=flat)
+[![Build Status](http://img.shields.io/travis/grammarjs/recursive-parser/v0.6.svg?style=flat)](https://travis-ci.org/grammarjs/recursive-parser)
 
 Recursive descent parser for PEG.
 

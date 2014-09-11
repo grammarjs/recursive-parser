@@ -102,44 +102,105 @@ Parser.prototype.visitRule = function(str, rule, grammar, exp){
 
 Parser.prototype.visitSymbol = function(str, symbol, grammar, parentExp){
   this.symbol = symbol;
-  var prev = this.expression;
-
   if (symbol.isExpression) {
-    var exp = grammar.rules[symbol.expression];
-    if (!exp) throw error("Expression '%s' is undefined (referenced in '%s')", symbol.expression, parentExp.name);
+    return this.parseExpression(symbol, str, grammar, parentExp);
+  } else if (symbol.isString) {
+    return this.parseString(symbol, str);
+  } else if (symbol.isRegExp) {
+    return this.parseRegExp(symbol, str);
+  }
+};
 
-    if (symbol.many) {
-      var pos = this.pos;
-      var res = [];
-      var val;
+/**
+ * Parse expression.
+ *
+ * @param {Symbol} symbol
+ * @param {String} str
+ * @param {Object} parser
+ * @api private
+ */
 
-      while (val = this.visitExpression(str, exp, grammar)) {
-        res.push(val);
-      }
+Parser.prototype.parseExpression = function(symbol, str, grammar, parentExp){
+  var prev = this.expression;
+  var exp = grammar.rules[symbol.expression];
+  if (!exp) throw error("Expression '%s' is undefined (referenced in '%s')", symbol.expression, parentExp.name);
 
-      this.expression = prev;
+  if (symbol.many) {
+    var pos = this.pos;
+    var res = [];
+    var val;
 
-      if (symbol.onePlus && !res.length) {
-        this.pos = pos;
-        return;
-      }
-      return res;
-    } else if (symbol.optional) {
-      var res = this.visitExpression(str, exp, grammar) || '';
-      this.expression = prev;
-      return res;
-    } else {
-      var pos = this.pos;
-      var res = this.visitExpression(str, exp, grammar);
-      if (res && symbol.matchAndIgnore) {
-        this.pos = pos;
-        res = null;
-      }
-      this.expression = prev;
-      return res;
+    while (val = this.visitExpression(str, exp, grammar)) {
+      res.push(val);
     }
+
+    this.expression = prev;
+
+    if (symbol.onePlus && !res.length) {
+      this.pos = pos;
+      return;
+    }
+    return res;
+  } else if (symbol.optional) {
+    var res = this.visitExpression(str, exp, grammar) || '';
+    this.expression = prev;
+    return res;
   } else {
-    return symbol.parse(str, this);
+    var pos = this.pos;
+    var res = this.visitExpression(str, exp, grammar);
+    if (res && symbol.matchAndIgnore) {
+      this.pos = pos;
+      res = null;
+    }
+    this.expression = prev;
+    return res;
+  }
+};
+
+/**
+ * Parse string.
+ *
+ * @param {Symbol} symbol
+ * @param {String} str
+ * @api private
+ */
+
+Parser.prototype.parseString = function(symbol, str){
+  if (symbol.val === str.substr(this.pos, symbol.val.length)) {
+    this.pos += symbol.val.length;
+    return symbol.val;
+  }
+};
+
+/**
+ * Parse RegExp.
+ *
+ * @param {Symbol} symbol
+ * @param {String} str
+ * @api private
+ */
+
+Parser.prototype.parseRegExp = function(symbol, str){
+  if (symbol.many) {
+    var pos = this.pos;
+    var res = [];
+
+    while (symbol.pattern.test(str.charAt(this.pos))) {
+      res.push(str.charAt(this.pos));
+      this.pos++;
+    }
+    
+    // reset if we want to match one or more but didn't find matches.
+    if (symbol.onePlus && !res.length) {
+      this.pos = pos;
+      return;
+    }
+    
+    return res.join('');
+  } else if (symbol.pattern.test(str.charAt(this.pos))) {
+    return str.charAt(this.pos++);
+  } else if (symbol.optional) {
+    return '';
   }
 };
 
