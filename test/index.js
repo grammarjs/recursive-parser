@@ -77,44 +77,24 @@ describe('parser', function(){
         { type: 'numb', content: '0' }
       ]
     });
-
-    // maybe this way?
-    // assert.deepEqual(parse('10+20'), {
-    //   type: 'math',
-    //   content: [
-    //     { type: 'numb', content: ['1', '0'] },
-    //     { type: 'plus', content: '+' },
-    //     { type: 'numb', content: ['2', '0'] }
-    //   ]
-    // });
-    // 
-    // or this way?
-    // assert.deepEqual(parse('10+20'), {
-    //   type: 'math',
-    //   content: [
-    //     { type: 'numb', content: '10' },
-    //     { type: 'plus', content: '+' },
-    //     { type: 'numb', content: '20' }
-    //   ]
-    // });
   });
 
-  // it('should handle $:rule+', function(){
-  //   grammar = new Grammar('math');
+  it('should handle $:rule+', function(){
+    grammar = new Grammar('math');
 
-  //   grammar.rule('math').match('$:numb+', ':plus', '$:numb+');
-  //   grammar.rule('plus').match('+');
-  //   grammar.rule('numb').match(/\d/);
+    grammar.rule('math').match('$:numb+', '$:plus', '$:numb+');
+    grammar.rule('plus').match('+');
+    grammar.rule('numb').match(/\d/);
     
-  //   assert.deepEqual(parse('10+20'), {
-  //     type: 'math',
-  //     content: [
-  //       { type: 'numb', content: '10' },
-  //       { type: 'plus', content: '+' },
-  //       { type: 'numb', content: '20' }
-  //     ]
-  //   });
-  // });
+    assert.deepEqual(parse('10+20'), {
+      type: 'math',
+      content: [
+        '10',
+        '+',
+        '20'
+      ]
+    });
+  });
 
   it('should handle :rule* (zero or more)', function(){
     grammar = new Grammar('numbers');
@@ -125,14 +105,14 @@ describe('parser', function(){
     assert.deepEqual(parse('123'), {
       type: 'numbers',
       content: [
-        { type: 'numb', content: '123' }
+        { type: 'numb', content: '1' },
+        { type: 'numb', content: '2' },
+        { type: 'numb', content: '3' }
       ]
     });
     assert.deepEqual(parse('7'), {
       type: 'numbers',
-      content: [
-        { type: 'numb', content: '7' }
-      ]
+      content: { type: 'numb', content: '7' }
     });
     // assert(isNaN(parse('')));
   });
@@ -143,11 +123,14 @@ describe('parser', function(){
     grammar.rule('plural').match('word', ':pluralized?', '!');
     grammar.rule('pluralized').match('s');
 
-    assert('words!' == parse('words!'));
-    assert('word!' == parse('word!'));
-    assert(!parse('wor'));
-    assert(!parse('word'));
-    assert(!parse('words'));
+    assert.deepEqual(parse('words!'), {
+      type: 'plural',
+      content: []
+    });
+    // assert('word!' == parse('word!'));
+    // assert(!parse('wor'));
+    // assert(!parse('word'));
+    // assert(!parse('words'));
   });
 
   it('should handle /\\d+/ (regexp one or more)', function(){
