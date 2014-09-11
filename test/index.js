@@ -159,8 +159,6 @@ describe('parser', function(){
       name: 'plural',
       content: [
         { type: '$string', content: 'word' },
-        // TODO: something should change here
-        { type: '$string', content: '' },
         { type: '$string', content: '!' }
       ]
     });
@@ -216,7 +214,6 @@ describe('parser', function(){
       name: 'plural',
       content: [
         { type: '$string', content: 'word' },
-        { type: '$string', content: '' },
         { type: '$string', content: '!' }
       ]
     });
@@ -230,6 +227,7 @@ describe('parser', function(){
 
     grammar.rule('relation').match(/\d+/, ':gt', /\d+/);
 
+    // in this case, we aren't returning the same amount of matches
     grammar.rule('gt').match(':character.gt', '!:character.gt');
     grammar.rule('character.gt').match('>');
 
@@ -238,10 +236,10 @@ describe('parser', function(){
       name: 'relation',
       content: [
         { type: '$string', content: '17' },
-        { type: '$rule', name: 'gt', content: [
+        { type: '$rule', name: 'gt', content:
           { type: '$rule', name: 'character.gt', content:
             { type: '$string', content: '>' } }
-        ] },
+        },
         { type: '$string', content: '15' }
       ]
     });
@@ -256,33 +254,16 @@ describe('parser', function(){
     grammar.rule('number').match(/\d/);
 
     assert.deepEqual(parse('7<15'), {
-      type: 'relation'
-    });
-  });
-
-  it('should return joined strings by default if there are no expressions', function(){
-    grammar = new Grammar('relation');
-
-    grammar.rule('relation').match(/\d+/, '<', /\d+/);
-
-    assert.deepEqual(parse('7<15'), {
-
-    });
-  });
-
-  it('should return array of expression', function(){
-    grammar = new Grammar('relation.array');
-
-    grammar.rule('relation.array').match(':digits', '<', ':digits');
-    grammar.rule('digits').match(/\d+/);
-
-    assert.deepEqual(parse('7<15'), {
-      type: 'relation.array',
+      type: '$rule',
+      name: 'relation',
       content: [
-        { type: 'digits', content: '7' },
-        { type: 'string', content: '<' },
-        { type: 'digits', content: '15' }
-    ]});
+        { type: '$string', content: '7' },
+        { type: '$rule', name: 'lt', content:
+          { type: '$rule', name: 'character.lt', content:
+            { type: '$string', content: '<' } } },
+        { type: '$string', content: '15' }
+      ]
+    });
   });
 });
 
