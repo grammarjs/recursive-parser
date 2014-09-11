@@ -9,228 +9,265 @@ if ('undefined' === typeof window) {
   var assert = require('component-assert');
 }
 
+var grammar;
+
 describe('parser', function(){
   it('should define string rules', function(){
-    var grammar = new Grammar('math');
-    grammar.rule('math').match('1', parseInt);
-    var parser = new Parser(grammar);
-    var val = parser.parse('1');
-    assert(1 === val);
+    grammar = new Grammar('math');
+    grammar.rule('math').match('1');
+    assert.deepEqual(parse('1'), {
+      type: '$rule',
+      name: 'math',
+      content: { type: '$string', content: '1' }
+    });
   });
 
   it('should define sub-rules', function(){
-    var grammar = new Grammar('math');
-    var rule = grammar.rule;
+    grammar = new Grammar('math');
 
-    rule('math').match(':numb', ':plus', ':numb', addition);
-    rule('plus').match('+', value);
-    rule('numb').match(/\d/, value);
+    grammar.rule('math').match(':numb', ':plus', ':numb');
+    grammar.rule('plus').match('+');
+    grammar.rule('numb').match(/\d/);
 
-    var parser = new Parser(grammar);
-    var val = parser.parse('1+2');
-    assert(3 === val);
+    assert.deepEqual(parse('1+2'), {
+      type: '$rule',
+      name: 'math',
+      content: [
+        { type: '$rule', name: 'numb', content: { type: '$string', content: '1' } },
+        { type: '$rule', name: 'plus', content: { type: '$string', content: '+' } },
+        { type: '$rule', name: 'numb', content: { type: '$string', content: '2' } }
+      ]
+    });
   });
 
-  it('should skip non-matching matchers', function(){
-    var grammar = new Grammar('math');
-    var rule = grammar.rule;
+  it('should skip non-matching rules', function(){
+    grammar = new Grammar('math');
 
-    rule('math')
-      .match(':numb', ':plus', ':numb', addition)
-      .match(':numb', ':minus', ':numb', subtraction);
+    grammar.rule('math')
+      .match(':numb', ':plus', ':numb')
+      .match(':numb', ':minus', ':numb');
     
-    rule('plus')
-      .match('+', value);
+    grammar.rule('plus').match('+');
+    grammar.rule('minus').match('-');
+    grammar.rule('numb').match(/\d/);
 
-    rule('minus')
-      .match('-', value);
-
-    rule('numb')
-      .match(/\d/, value);
-
-    var parser = new Parser(grammar);
-    var val = parser.parse('1-2');
-    assert(-1 === val);
+    assert.deepEqual(parse('1-2'), {
+      type: '$rule',
+      name: 'math',
+      content: [
+        { type: '$rule', name: 'numb', content: { type: '$string', content: '1' } },
+        { type: '$rule', name: 'minus', content: { type: '$string', content: '-' } },
+        { type: '$rule', name: 'numb', content: { type: '$string', content: '2' } }
+      ]
+    });
   });
 
   it('should handle :rule+', function(){
-    var grammar = new Grammar('math');
-    var rule = grammar.rule;
+    grammar = new Grammar('math');
 
-    rule('math').match(':numb+', ':plus', ':numb+', addition2);
-    rule('plus').match('+', value);
-    rule('numb').match(/\d/, value);
+    grammar.rule('math').match(':numb+', ':plus', ':numb+');
+    grammar.rule('plus').match('+');
+    grammar.rule('numb').match(/\d/);
 
-    var parser = new Parser(grammar);
-    var val = parser.parse('10+20');
-    assert(30 === val);
+    // not sure how this should work yet
+    assert.deepEqual(parse('10+20'), {
+      type: '$rule',
+      name: 'math',
+      content: [
+        { type: '$array', content: [
+          { type: '$rule', name: 'numb', content: { type: '$string', content: '1' } },
+          { type: '$rule', name: 'numb', content: { type: '$string', content: '0' } }
+        ] },
+        { type: '$rule', name: 'plus', content: { type: '$string', content: '+' } },
+        { type: '$array', content: [
+          { type: '$rule', name: 'numb', content: { type: '$string', content: '2' } },
+          { type: '$rule', name: 'numb', content: { type: '$string', content: '0' } }
+        ] }
+      ]
+    });
+  });
+
+  it('should handle $:rule+', function(){
+    grammar = new Grammar('math');
+
+    grammar.rule('math').match('$:numb+', '$:plus', '$:numb+');
+    grammar.rule('plus').match('+');
+    grammar.rule('numb').match(/\d/);
+    
+    assert.deepEqual(parse('10+20'), {
+      type: '$rule',
+      name: 'math',
+      content: [
+        { type: '$array.join', content: [
+          { type: '$rule', name: 'numb', content: { type: '$string', content: '1' } },
+          { type: '$rule', name: 'numb', content: { type: '$string', content: '0' } }
+        ] },
+        { type: '$join', content:
+          { type: '$rule', name: 'plus', content: { type: '$string', content: '+' } } },
+        { type: '$array.join', content: [
+          { type: '$rule', name: 'numb', content: { type: '$string', content: '2' } },
+          { type: '$rule', name: 'numb', content: { type: '$string', content: '0' } }
+        ] }
+      ]
+    });
   });
 
   it('should handle :rule* (zero or more)', function(){
-    var grammar = new Grammar('numbers');
-    var rule = grammar.rule;
+    grammar = new Grammar('numbers');
 
-    rule('numbers').match(':numb*', ints);
-    rule('numb').match(/\d/, value);
+    grammar.rule('numbers').match(':numb*');
+    grammar.rule('numb').match(/\d/);
 
-    var parser = new Parser(grammar);
-    assert(123 === parser.parse('123'));
-    assert(7 === parser.parse('7'));
-    assert(isNaN(parser.parse('')));
+    assert.deepEqual(parse('123'), {
+      type: '$rule',
+      name: 'numbers',
+      content:
+        { type: '$array', content: [
+          { type: '$rule', name: 'numb', content: { type: '$string', content: '1' } },
+          { type: '$rule', name: 'numb', content: { type: '$string', content: '2' } },
+          { type: '$rule', name: 'numb', content: { type: '$string', content: '3' } }
+        ] }
+    });
+    assert.deepEqual(parse('7'), {
+      type: '$rule',
+      name: 'numbers',
+      content: { type: '$array', content: [
+        { type: '$rule', name: 'numb', content: { type: '$string', content: '7' } }
+      ] }
+    });
   });
 
   it('should handle :rule? (optional)', function(){
-    var grammar = new Grammar('plural');
-    var rule = grammar.rule;
+    grammar = new Grammar('plural');
 
-    rule('plural').match('word', ':pluralized?', '!', function(a, b, c){
-      return a + b + c;
+    grammar.rule('plural').match('word', ':pluralized?', '!');
+    grammar.rule('pluralized').match('s');
+
+    assert.deepEqual(parse('words!'), {
+      type: '$rule',
+      name: 'plural',
+      content: [
+        { type: '$string', content: 'word' },
+        { type: '$rule', name: 'pluralized', content:
+          { type: '$string', content: 's' } },
+        { type: '$string', content: '!' }
+      ]
     });
-    rule('pluralized').match('s', value);
 
-    var parser = new Parser(grammar);
-    assert('words!' == parser.parse('words!'));
-    assert('word!' == parser.parse('word!'));
-    assert(!parser.parse('wor'));
-    assert(!parser.parse('word'));
-    assert(!parser.parse('words'));
+    assert.deepEqual(parse('word!'), {
+      type: '$rule',
+      name: 'plural',
+      content: [
+        { type: '$string', content: 'word' },
+        { type: '$string', content: '!' }
+      ]
+    });
+
+    assert(!parse('wor'));
+    assert(!parse('word'));
+    assert(!parse('words'));
   });
 
   it('should handle /\\d+/ (regexp one or more)', function(){
-    var grammar = new Grammar('math');
-    var rule = grammar.rule;
+    grammar = new Grammar('math');
 
-    rule('math').match(/\d+/, '+', /\d/, addition);
+    grammar.rule('math').match(/\d+/, '+', /\d/);
 
-    var parser = new Parser(grammar);
-    var val = parser.parse('10+2');
-    assert(12 === val);
+    assert.deepEqual(parse('10+2'), {
+      type: '$rule',
+      name: 'math',
+      content: [
+        { type: '$string', content: '10' },
+        { type: '$string', content: '+' },
+        { type: '$string', content: '2' }
+      ]
+    });
   });
 
   it('should handle /\\d*/ (regexp zero or more)', function(){
-    var grammar = new Grammar('numbers');
-    var rule = grammar.rule;
+    grammar = new Grammar('numbers');
 
-    rule('numbers').match(/\d*/, parseInt);
+    grammar.rule('numbers').match(/\d*/);
 
-    var parser = new Parser(grammar);
-    assert(123 === parser.parse('123'));
-    assert(7 === parser.parse('7'));
-    assert(isNaN(parser.parse('')));
+    parser = new Parser(grammar);
+    assert(parse('123'));
+    assert(parse('7'));
+    // assert(isNaN(parser.parse('')));
   });
 
   it('should handle /words?/ (regexp optional)', function(){
-    var grammar = new Grammar('plural');
-    var rule = grammar.rule;
+    grammar = new Grammar('plural');
 
-    rule('plural').match('word', /s?/, '!', function(a, b, c){
-      return a + b + c;
+    grammar.rule('plural').match('word', /s?/, '!');
+
+    assert.deepEqual(parse('words!'), {
+      type: '$rule',
+      name: 'plural',
+      content: [
+        { type: '$string', content: 'word' },
+        { type: '$string', content: 's' },
+        { type: '$string', content: '!' }
+      ]
     });
-
-    var parser = new Parser(grammar);
-    assert('words!' == parser.parse('words!'));
-    assert('word!' == parser.parse('word!'));
-    assert(!parser.parse('wor'));
-    assert(!parser.parse('word'));
-    assert(!parser.parse('words'));
-  });
-
-  it('should store a reference to rule, rule, and symbol', function(){
-    var grammar = new Grammar('numbers');
-    var rule = grammar.rule;
-
-    var ctx = {};
-    rule('numbers').match(/\d*/, function(){
-      var parser = this.parser;
-      ctx.expression = parser.expression;
-      ctx.rule = parser.rule;
-      ctx.symbol = parser.symbol;
+    assert.deepEqual(parse('word!'), {
+      type: '$rule',
+      name: 'plural',
+      content: [
+        { type: '$string', content: 'word' },
+        { type: '$string', content: '!' }
+      ]
     });
-
-    var parser = new Parser(grammar);
-    parser.parse('123');
-    assert('numbers' == ctx.expression.name);
-    assert(ctx.rule);
-    assert(ctx.symbol.isRegExp);
+    assert(!parse('wor'));
+    assert(!parse('word'));
+    assert(!parse('words'));
   });
 
   it('should not consume token if given !', function(){
-    var grammar = new Grammar('relation');
-    var rule = grammar.rule;
+    grammar = new Grammar('relation');
 
-    rule('relation')
-      .match(/\d+/, ':gt', /\d+/, function($1, $2, $3){
-        return parseInt($1) > parseInt($3);
-      });
+    grammar.rule('relation').match(/\d+/, ':gt', /\d+/);
 
-    rule('gt').match(':character.gt', '!:character.gt', value);
-    rule('character.gt').match('>', value);
+    // in this case, we aren't returning the same amount of matches
+    grammar.rule('gt').match(':character.gt', '!:character.gt');
+    grammar.rule('character.gt').match('>');
 
-    var parser = new Parser(grammar);
-    assert(parser.parse('17>15'));
+    assert.deepEqual(parse('17>15'), {
+      type: '$rule',
+      name: 'relation',
+      content: [
+        { type: '$string', content: '17' },
+        { type: '$rule', name: 'gt', content:
+          { type: '$rule', name: 'character.gt', content:
+            { type: '$string', content: '>' } }
+        },
+        { type: '$string', content: '15' }
+      ]
+    });
   });
 
   it('should not consume token if given &', function(){
-    var grammar = new Grammar('relation');
-    var rule = grammar.rule;
+    grammar = new Grammar('relation');
 
-    rule('relation')
-      .match(/\d+/, ':lt', /\d+/, function($1, $2, $3){
-        return parseInt($1) < parseInt($3);
-      });
+    grammar.rule('relation').match(/\d+/, ':lt', /\d+/);
+    grammar.rule('lt').match(':character.lt', '&:number');
+    grammar.rule('character.lt').match('<');
+    grammar.rule('number').match(/\d/);
 
-    rule('lt').match(':character.lt', '&:number', function(op){
-      return op;
+    assert.deepEqual(parse('7<15'), {
+      type: '$rule',
+      name: 'relation',
+      content: [
+        { type: '$string', content: '7' },
+        { type: '$rule', name: 'lt', content:
+          { type: '$rule', name: 'character.lt', content:
+            { type: '$string', content: '<' } } },
+        { type: '$string', content: '15' }
+      ]
     });
-    rule('character.lt').match('<', value);
-    rule('number').match(/\d/, value);
-
-    var parser = new Parser(grammar);
-    assert(parser.parse('7<15'));
-  });
-
-  it('should return joined strings by default if there are no expressions', function(){
-    var grammar = new Grammar('relation');
-    var rule = grammar.rule;
-
-    rule('relation').match(/\d+/, '<', /\d+/);
-
-    var parser = new Parser(grammar);
-    assert.equal(parser.parse('7<15'), '7<15');
-  });
-
-  it('should return array of expression', function(){
-    var grammar = new Grammar('relation.array');
-    var rule = grammar.rule;
-
-    rule('relation.array').match(':digit', '<', ':digit');
-    rule('digit').match(/\d+/);
-
-    var parser = new Parser(grammar);
-    assert.deepEqual(parser.parse('7<15'), [
-      { type: 'digit', content: '7' },
-      { type: 'string', content: '<' },
-      { type: 'digit', content: '15' }
-    ]);
   });
 });
 
-function addition($1, $2, $3) {
-  return parseInt($1) + parseInt($3);
-}
-
-function addition2($1, $2, $3) {
-  return parseInt($1.join('')) + parseInt($3.join(''));
-}
-
-function subtraction($1, $2, $3) {
-  return parseInt($1) - parseInt($3);
-}
-
-function value(val) {
-  return val;
-}
-
-function ints(args) {
-  return parseInt(args.join(''));
+function parse(str) {
+  var parser = new Parser(grammar);
+  return parser.parse(str);
 }
